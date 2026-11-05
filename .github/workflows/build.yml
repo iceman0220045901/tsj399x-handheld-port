@@ -1,0 +1,90 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build (aarch64 linux)
+    runs-on: ubuntu-24.04-arm64
+    container:
+      image: ubuntu:22.04
+    env:
+      SDL_TAG: release-3.4.20        # SDL3
+      SDL_IMAGE_TAG: release-3.4.8   # SDL3_image
+      SDL_TTF_TAG: release-3.2.2     # SDL3_ttf
+      SDL_MIXER_TAG: release-3.2.4   # SDL3_mixer
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            git ca-certificates curl build-essential g++-12 cmake ninja-build pkg-config \
+            libzip-dev libasound2-dev libudev-dev \
+            libdrm-dev libgbm-dev libegl1-mesa-dev libgles2-mesa-dev \
+            libx11-dev libxext-dev libxcursor-dev libxi-dev libxrandr-dev \
+            libwayland-dev libxkbcommon-dev zip
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build SDL3
+        run: |
+          git clone --depth 1 --branch "$SDL_TAG" https://github.com/libsdl-org/SDL.git /tmp/SDL
+          cmake -S /tmp/SDL -B /tmp/SDL/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
+            -DSDL_SHARED=ON -DSDL_STATIC=OFF \
+            -DSDL_ALSA=ON -DSDL_UDEV=ON -DSDL_KMSDRM=ON \
+            -DSDL_WAYLAND=ON -DSDL_X11=ON
+          cmake --build /tmp/SDL/build -j$(nproc)
+          cmake --install /tmp/SDL/build
+
+      - name: Build SDL3_image
+        run: |
+          git clone --depth 1 --branch "$SDL_IMAGE_TAG" https://github.com/libsdl-org/SDL_image.git /tmp/SDL_image
+          cmake -S /tmp/SDL_image -B /tmp/SDL_image/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
+            -DSDLIMAGE_VENDORED=ON -DSDLIMAGE_TESTS=OFF -DSDLIMAGE_SAMPLES=OFF \
+            -DSDLIMAGE_SHARED=ON -DSDLIMAGE_STATIC=OFF
+          cmake --build /tmp/SDL_image/build -j$(nproc)
+          cmake --install /tmp/SDL_image/build
+
+      - name: Build SDL3_ttf
+        run: |
+          git clone --depth 1 --branch "$SDL_TTF_TAG" https://github.com/libsdl-org/SDL_ttf.git /tmp/SDL_ttf
+          cmake -S /tmp/SDL_ttf -B /tmp/SDL_ttf/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
+            -DSDLTTF_VENDORED=ON -DSDLTTF_TESTS=OFF -DSDLTTF_SAMPLES=OFF \
+            -DSDLTTF_SHARED=ON -DSDLTTF_STATIC=OFF
+          cmake --build /tmp/SDL_ttf/build -j$(nproc)
+          cmake --install /tmp/SDL_ttf/build
+
+      - name: Build SDL3_mixer
+        run: |
+          git clone --depth 1 --branch "$SDL_MIXER_TAG" https://github.com/libsdl-org/SDL_mixer.git /tmp/SDL_mixer
+          cmake -S /tmp/SDL_mixer -B /tmp/SDL_mixer/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
+            -DSDLMIXER_VENDORED=ON -DSDLMIXER_TESTS=OFF -DSDLMIXER_SAMPLES=OFF \
+            -DSDLMIXER_SHARED=ON -DSDLMIXER_STATIC=OFF
+          cmake --build /tmp/SDL_mixer/build -j$(nproc)
+          cmake --install /tmp/SDL_mixer/build
+
+      - name: Configure engine
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=/usr/local
+
+      - name: Build engine
+        run: cmake --build build -j$(nproc)
+
+      - name: Upload engine binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: jysdl-aarch64
+          path: build/jysdl
+          if-no-files-found: error
