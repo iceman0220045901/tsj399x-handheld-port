@@ -82,9 +82,132 @@ jobs:
       - name: Build engine
         run: cmake --build build -j$(nproc)
 
+      - name: Show link closure
+        run: ldd build/jysdl
+
+      - name: Collect SDL3 runtime libs
+        run: |
+          mkdir -p sdl3-libs
+          cp -a /usr/local/lib/libSDL3*.so* sdl3-libs/
+          ls -la sdl3-libs/
+
       - name: Upload engine binary
         uses: actions/upload-artifact@v4
         with:
           name: jysdl-aarch64
           path: build/jysdl
+          if-no-files-found: error
+
+      - name: Upload SDL3 runtime libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdl3-libs
+          path: sdl3-libs
+          if-no-files-found: error
+
+  smoke:
+    name: headless smoke (synthetic harness)
+    runs-on: ubuntu-24.04-arm64
+    container:
+      image: ubuntu:22.04
+    needs: build
+    steps:
+      - name: Install runtime dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            git ca-certificates curl zip libzip4 \
+            libasound2 libudev1 libdrm2 libgbm1 libegl1 libgles2 \
+            libx11-6 libxext6 libxcursor1 libxi6 libxrandr2 \
+            libwayland-client0 libxkbcommon0
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download engine binary
+        uses: actions/download-artifact@v4
+        with:
+          name: jysdl-aarch64
+          path: build
+
+      - name: Download SDL3 runtime libs
+        uses: actions/download-artifact@v4
+        with:
+          name: sdl3-libs
+          path: sdl3-libs
+
+      - name: Run smoke harness
+        working-directory: ports/tsj399x/game-test
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+          LD_LIBRARY_PATH: ${{ github.workspace }}/sdl3-libs
+          JY_SMOKE: "1"
+          JY_SMOKE_SECONDS: "8"
+        run: |
+          chmod +x ../../../build/jysdl
+          ../../../build/jysdl > smoke-stdout.log 2>&1; rc=$?
+          echo "exit code: $rc"
+          echo "=== stdout ==="; cat smoke-stdout.log || true
+          echo "=== debug.log ==="; cat debug.log || true
+          echo "=== error.log ==="; cat error.log || true
+          grep -q "SMOKE-OK api registered" smoke-stdout.log debug.log || {
+            echo "SMOKE FAILED: api registration assertion not found"; exit 1; }
+          grep -q "SMOKE-OK JY_Main loop done" smoke-stdout.log debug.log || {
+            echo "SMOKE FAILED: JY_Main loop did not complete"; exit 1; }
+          if grep -q "SMOKE-FAIL" smoke-stdout.log debug.log 2>/dev/null; then
+            echo "SMOKE FAILED: assertion error present"; exit 1; fi
+          if grep -qi "attempt to call" debug.log 2>/dev/null; then
+            echo "SMOKE FAILED: nil call detected"; exit 1; fi
+          echo "SMOKE PASSED"
+
+  package:
+    name: assemble portmaster package
+    runs-on: ubuntu-24.04-arm64
+    container:
+      image: ubuntu:22.04
+    needs: [build, smoke]
+    steps:
+      - name: Install packaging dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            git ca-certificates curl zip
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download engine binary
+        uses: actions/download-artifact@v4
+        with:
+          name: jysdl-aarch64
+          path: build
+
+      - name: Download SDL3 runtime libs
+        uses: actions/download-artifact@v4
+        with:
+          name: sdl3-libs
+          path: sdl3-libs
+
+      - name: Assemble package
+        run: |
+          mkdir -p pkg/tsj399x/libs pkg/tsj399x/game
+          cp build/jysdl pkg/tsj399x/jysdl
+          chmod +x pkg/tsj399x/jysdl
+          cp sdl3-libs/*.so* pkg/tsj399x/libs/
+          cp ports/tsj399x/tsj399x.sh pkg/tsj399x/
+          chmod +x pkg/tsj399x/tsj399x.sh
+          cp ports/tsj399x/port.json ports/tsj399x/README-install.md pkg/tsj399x/
+          cp ports/tsj399x/game/set.ini pkg/tsj399x/game/set.ini
+          echo "用户自备游戏数据拷入 game/（见 README-install.md）" > pkg/tsj399x/game/放游戏数据到这里.txt
+          cd pkg
+          zip -r ../tsj399x-port.zip tsj399x/
+          cd ..
+          unzip -l tsj399x-port.zip
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tsj399x-port
+          path: tsj399x-port.zip
           if-no-files-found: error

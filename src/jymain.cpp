@@ -268,6 +268,54 @@ void GetModes(int* width, int* height)
     fclose(fp);
 }
 
+// ============ 冒烟测试钩子 ============
+// 环境变量 JY_SMOKE=1 启用：定时注入按键（方向/确认/取消轮换），
+// JY_SMOKE_SECONDS 秒后注入 SDL_EVENT_QUIT 请求退出（Lua Menu_Exit 返回 1 时进程干净退出）。
+// 仅供 CI 无头冒烟使用，正常运行（未设 JY_SMOKE）完全不生效。
+static Uint64 g_SmokeStart = 0;
+static int g_SmokeSeconds = 0;
+static int g_SmokeKeyIdx = 0;
+static const SDL_Keycode g_SmokeKeys[] = {
+    SDLK_RETURN, SDLK_DOWN, SDLK_DOWN, SDLK_RIGHT,
+    SDLK_ESCAPE, SDLK_LEFT, SDLK_DOWN, SDLK_RETURN
+};
+
+static Uint32 SDLCALL JY_SmokeTimer(void* userdata, Uint32 timerID, Uint32 interval)
+{
+    (void)userdata;
+    (void)timerID;
+    Uint64 elapsed = (SDL_GetTicks() - g_SmokeStart) / 1000;
+    if (g_SmokeSeconds > 0 && elapsed >= (Uint64)g_SmokeSeconds) {
+        SDL_Event quit;
+        SDL_zero(quit);
+        quit.type = SDL_EVENT_QUIT;
+        SDL_PushEvent(&quit);
+        return 0;    // 停止定时器
+    }
+    SDL_Event ev;
+    SDL_zero(ev);
+    ev.type = SDL_EVENT_KEY_DOWN;
+    ev.key.key = g_SmokeKeys[g_SmokeKeyIdx % (sizeof(g_SmokeKeys) / sizeof(g_SmokeKeys[0]))];
+    ev.key.scancode = SDL_GetScancodeFromKey(ev.key.key, NULL);
+    ev.key.down = true;
+    g_SmokeKeyIdx++;
+    SDL_PushEvent(&ev);
+    return 700;
+}
+
+void JY_SmokeInit()
+{
+    const char* s = SDL_getenv("JY_SMOKE");
+    if (!s || s[0] == '\0' || s[0] == '0') {
+        return;
+    }
+    const char* t = SDL_getenv("JY_SMOKE_SECONDS");
+    g_SmokeSeconds = t ? atoi(t) : 20;
+    g_SmokeStart = SDL_GetTicks();
+    SDL_AddTimer(500, JY_SmokeTimer, NULL);
+    JY_Debug("JY_SmokeInit: smoke mode on, %d seconds", g_SmokeSeconds);
+}
+
 // 主程序
 int main(int argc, char* argv[])
 {
@@ -316,6 +364,8 @@ int main(int argc, char* argv[])
 
     JY_Debug("InitSDL();");
     InitSDL();    //初始化SDL
+
+    JY_SmokeInit();    //冒烟模式：仅 JY_SMOKE 环境变量置位时生效
 
     JY_Debug("InitGame();");
     InitGame();    //初始化游戏数据

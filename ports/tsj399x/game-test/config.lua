@@ -1,0 +1,24 @@
+-- CI 冒烟测试配置（明文 Lua，字段与正式 set.ini 同面）
+CONFIG = {}
+CONFIG.Width = 640
+CONFIG.Height = 480
+CONFIG.bpp = 32
+CONFIG.FullScreen = 0
+CONFIG.Debug = 1
+CONFIG.EnableSound = 1
+CONFIG.MusicVolume = 32
+CONFIG.SoundVolume = 32
+CONFIG.MP3 = 0
+CONFIG.Zoom = 100
+CONFIG.SwitchABXY = 0
+CONFIG.MAXCacheNum = 100
+CONFIG.LoadFullS = 0
+CONFIG.MMapAddX = 0
+CONFIG.MMapAddY = 0
+CONFIG.SMapAddX = 0
+CONFIG.SMapAddY = 0
+CONFIG.WMapAddX = 0
+CONFIG.WMapAddY = 0
+CONFIG.Softener = ""
+CONFIG.MidSF2 = "data/sound/mid-not-exist.sf2"
+CONFIG.JYMain_Lua = "testmain.lua"

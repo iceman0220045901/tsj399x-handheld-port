@@ -1,0 +1,18 @@
+{
+    "title": "天书劫原味强化版3.99X",
+    "title_pron": "TianShuJie 3.99X",
+    "description": "《金庸群侠传》大型 MOD 天书劫原味强化版 3.99X，基于开源 jysdl-bh 引擎（Lua 复刻版血统）的 aarch64 Linux 移植。需自备游戏数据文件。",
+    "instructions": "把电脑版游戏目录中的 config.lua、script/、data/、font/、pic/ 拷入本包 game/ 文件夹（不要拷 set.ini），整个 tsj399x 文件夹放入 roms/ports 后在 Ports 菜单启动。",
+    "porter": "iceman0220045901",
+    "version": "1.0.0",
+    "genres": [
+        "RPG"
+    ],
+    "architecture": {
+        "aarch64": "tsj399x.zip"
+    },
+    "flags": [
+        "Experimental"
+    ],
+    "availability": "自带资源，需用户提供 MOD 数据"
+}

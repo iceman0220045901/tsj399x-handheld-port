@@ -63,6 +63,9 @@ int Lua_Config(lua_State* pL, const char* filename);
 int getfield(lua_State* pL, const char* key);
 int getfieldstr(lua_State* pL, const char* key, char* str);
 
+// 冒烟测试钩子（JY_SMOKE 环境变量控制，CI 专用）
+void JY_SmokeInit();
+
 // 日志输出 (底层实现，由宏包装自动注入 __FILE__/__LINE__/__FUNCTION__)
 int JY_Debug_Impl(const char* file, int line, const char* func, const char* fmt, ...);
 int JY_Error_Impl(const char* file, int line, const char* func, const char* fmt, ...);
