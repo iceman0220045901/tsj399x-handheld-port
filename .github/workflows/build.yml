@@ -172,7 +172,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            git ca-certificates curl zip
+            git ca-certificates curl zip unzip
 
       - name: Checkout
         uses: actions/checkout@v4
