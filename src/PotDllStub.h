@@ -1,7 +1,7 @@
-// Android 平台 PotDll 存根 (tinypot 视频播放不可用)
+// Android/Linux 平台 PotDll 存根 (tinypot 视频播放不可用)
 #pragma once
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || (defined(__linux__) && !defined(__APPLE__))
 
 #define MYTHAPI
 #define HBAPI
