@@ -59,8 +59,10 @@ int g_DelayTimes;            //延迟帧数
 
 #ifdef _WIN32
 const char* JY_CurrentPath = "./";
-#else
+#elif defined(__ANDROID__)
 const char* JY_CurrentPath = "/sdcard/JYLDCR/";
+#else
+const char* JY_CurrentPath = "./";
 #endif
 
 lua_State* pL_main = NULL;
@@ -293,6 +295,21 @@ int main(int argc, char* argv[])
     luaL_setfuncs(pL_main, bytelib, 1);
     lua_pushvalue(pL_main, -1);
     lua_setglobal(pL_main, "Byte");
+
+    // 兼容旧 ldcr 引擎：引擎函数同时以裸全局暴露（旧 MOD 直接调用 GetS 等）
+    lua_getglobal(pL_main, "lib");
+    for (const luaL_Reg* l = jylib; l->name; l++) {
+        lua_getfield(pL_main, -1, l->name);
+        lua_setglobal(pL_main, l->name);
+    }
+    lua_pop(pL_main, 1);
+
+    // GetPath（configLib）注册进 lib 表，并以裸全局暴露
+    lua_getglobal(pL_main, "lib");
+    luaL_setfuncs(pL_main, configLib, 0);
+    lua_getfield(pL_main, -1, "GetPath");
+    lua_setglobal(pL_main, "GetPath");
+    lua_pop(pL_main, 1);
 
     JY_Debug("Lua_Config();");
     Lua_Config(pL_main, _(CONFIG_FILE));    //读取lua配置文件，设置参数
