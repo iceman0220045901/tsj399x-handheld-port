@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -16,7 +17,7 @@ private:
     struct Tire
     {
         std::string value;
-        std::unordered_map<std::string, Tire> children;
+        std::unordered_map<std::string, std::unique_ptr<Tire>> children;
     };
     Tire root_;
 

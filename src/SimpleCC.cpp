@@ -28,11 +28,11 @@ std::string SimpleCC::conv(const std::string& src)
             {
                 end += len;
                 //递归查找最长的词组，不可中断
-                if (!t->children[key].value.empty())
+                if (!t->children[key]->value.empty())
                 {
-                    word = { end - begin, &t->children[key].value };
+                    word = { end - begin, &t->children[key]->value };
                 }
-                t = &t->children[key];
+                t = t->children[key].get();
             }
             else
             {
@@ -118,13 +118,18 @@ void SimpleCC::write(const std::string& key, const std::string& value)
     std::function<void(const std::string&, const std::string&, Tire&)> write_key = [&](const std::string& key, const std::string& value, Tire& t)
     {
         int len = utf8length(key[0]);
+        auto& child = t.children[key];
+        if (!child)
+        {
+            child.reset(new Tire());
+        }
         if (key.size() <= len)
         {
-            t.children[key].value = value;
+            child->value = value;
         }
         else
         {
-            write_key(key.substr(len), value, t.children[key.substr(0, len)]);
+            write_key(key.substr(len), value, *child);
         }
     };
     write_key(key, value, root_);
