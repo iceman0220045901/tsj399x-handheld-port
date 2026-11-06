@@ -25,12 +25,12 @@ jobs:
             apt-get update
           }
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            git ca-certificates curl build-essential g++-11 cmake ninja-build pkg-config \
+            git ca-certificates curl build-essential g++-10 cmake ninja-build pkg-config \
             libzip-dev libasound2-dev libudev-dev \
             libdrm-dev libgbm-dev libegl1-mesa-dev libgles2-mesa-dev \
             libx11-dev libxext-dev libxcursor-dev libxi-dev libxrandr-dev \
             libwayland-dev libxkbcommon-dev zip
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Checkout
