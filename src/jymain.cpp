@@ -358,6 +358,10 @@ int main(int argc, char* argv[])
     lua_getfield(pL_main, -1, "GetPath");
     lua_setglobal(pL_main, "GetPath");
     lua_pop(pL_main, 1);
+    // 旧 ldcr 引擎注册全局 config 表（MOD 的 config.lua 调用 config.GetPath()）
+    lua_newtable(pL_main);
+    luaL_setfuncs(pL_main, configLib, 0);
+    lua_setglobal(pL_main, "config");
 
     JY_Debug("Lua_Config();");
     Lua_Config(pL_main, _(CONFIG_FILE));    //读取lua配置文件，设置参数
