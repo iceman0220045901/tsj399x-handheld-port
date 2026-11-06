@@ -47,6 +47,7 @@ jobs:
       - name: Build SDL3_image
         run: |
           git clone --depth 1 --branch "$SDL_IMAGE_TAG" https://github.com/libsdl-org/SDL_image.git /tmp/SDL_image
+          git -C /tmp/SDL_image submodule update --init --depth 1
           cmake -S /tmp/SDL_image -B /tmp/SDL_image/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
             -DSDLIMAGE_VENDORED=ON -DSDLIMAGE_TESTS=OFF -DSDLIMAGE_SAMPLES=OFF \
@@ -57,6 +58,7 @@ jobs:
       - name: Build SDL3_ttf
         run: |
           git clone --depth 1 --branch "$SDL_TTF_TAG" https://github.com/libsdl-org/SDL_ttf.git /tmp/SDL_ttf
+          git -C /tmp/SDL_ttf submodule update --init --depth 1
           cmake -S /tmp/SDL_ttf -B /tmp/SDL_ttf/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
             -DSDLTTF_VENDORED=ON -DSDLTTF_TESTS=OFF -DSDLTTF_SAMPLES=OFF \
@@ -67,6 +69,7 @@ jobs:
       - name: Build SDL3_mixer
         run: |
           git clone --depth 1 --branch "$SDL_MIXER_TAG" https://github.com/libsdl-org/SDL_mixer.git /tmp/SDL_mixer
+          git -C /tmp/SDL_mixer submodule update --init --depth 1
           cmake -S /tmp/SDL_mixer -B /tmp/SDL_mixer/build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local \
             -DSDLMIXER_VENDORED=ON -DSDLMIXER_TESTS=OFF -DSDLMIXER_SAMPLES=OFF \
