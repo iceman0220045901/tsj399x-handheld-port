@@ -79,4 +79,6 @@ target_link_libraries(jysdl PRIVATE
     SDL3_ttf::SDL3_ttf
     SDL3_mixer::SDL3_mixer
     lua52
-    zip)
+    zip
+    dl
+    m)
