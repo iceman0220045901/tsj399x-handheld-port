@@ -480,6 +480,22 @@ int Lua_Config(lua_State* pL, const char* filename)
     getfieldstr(pL, "MidSF2", g_MidSF2);
     getfieldstr(pL, "JYMain_Lua", g_MainLuaFile);
     getfieldstr(pL, "Softener", g_Softener);
+    // 天书劫等 ldcr 系 MOD 的 config.lua 不写 JYMain_Lua（旧引擎默认为
+    // ScriptPath + "jymain.lua"）。这里保持同样回退，避免主脚本路径为空。
+    if (g_MainLuaFile[0] == '\0')
+    {
+        char spath[255];
+        spath[0] = '\0';
+        getfieldstr(pL, "ScriptPath", spath);
+        if (spath[0] != '\0')
+        {
+            snprintf(g_MainLuaFile, sizeof(g_MainLuaFile), "%sjymain.lua", spath);
+        }
+        else
+        {
+            strcpy(g_MainLuaFile, "jymain.lua");
+        }
+    }
     return 0;
 }
 
