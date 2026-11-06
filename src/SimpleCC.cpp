@@ -24,7 +24,7 @@ std::string SimpleCC::conv(const std::string& src)
         {
             int len = utf8length(str[end]);
             auto key = str.substr(end, len);
-            if (t->children.contains(key))
+            if (t->children.find(key) != t->children.end())
             {
                 end += len;
                 //递归查找最长的词组，不可中断
@@ -101,7 +101,7 @@ int SimpleCC::init(std::vector<std::string> files)
                 break;
             }
             std::string value = str.substr(pos_space + 1, pos_line - pos_space - 1);
-            if (value.contains(' '))
+            if (value.find(' ') != std::string::npos)
             {
                 value = value.substr(0, value.find(' '));
             }
