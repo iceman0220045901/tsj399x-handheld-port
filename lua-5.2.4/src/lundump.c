@@ -5,9 +5,17 @@
 */
 
 #include <string.h>
+#include <stdint.h>
 
 #define lundump_c
 #define LUA_CORE
+
+/*
+ * 天书劫/Legend 生态的字节码由 32 位编译器生成（size_t 固定 4 字节），
+ * 与宿主进程的 size_t 无关。加载端按此契约固定读取，否则 64 位构建
+ * 头部校验报 "incompatible precompiled chunk"。
+ */
+#define LUAC_FORMAT_SIZET 4
 
 #include "lua.h"
 
@@ -71,14 +79,14 @@ static lua_Number LoadNumber(LoadState* S)
 
 static TString* LoadString(LoadState* S)
 {
- size_t size;
+ uint32_t size;		/* 字节码契约：32 位 size_t */
  LoadVar(S,size);
  if (size==0)
   return NULL;
  else
  {
-  char* s=luaZ_openspace(S->L,S->b,size);
-  LoadBlock(S,s,size*sizeof(char));
+  char* s=luaZ_openspace(S->L,S->b,(size_t)size);
+  LoadBlock(S,s,(size_t)size*sizeof(char));
   return luaS_newlstr(S->L,s,size-1);		/* remove trailing '\0' */
  }
 }
@@ -250,7 +258,7 @@ void luaU_header (lu_byte* h)
  *h++=cast_byte(FORMAT);
  *h++=cast_byte(*(char*)&x);			/* endianness */
  *h++=cast_byte(sizeof(int));
- *h++=cast_byte(sizeof(size_t));
+ *h++=cast_byte(LUAC_FORMAT_SIZET);
  *h++=cast_byte(sizeof(Instruction));
  *h++=cast_byte(sizeof(lua_Number));
  *h++=cast_byte(((lua_Number)0.5)==0);		/* is lua_Number integral? */
