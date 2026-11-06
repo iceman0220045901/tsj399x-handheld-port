@@ -220,7 +220,12 @@ jobs:
           cp sdl3-libs/*.so* pkg/tsj399x/libs/
           cp ports/tsj399x/tsj399x.sh pkg/tsj399x/
           chmod +x pkg/tsj399x/tsj399x.sh
-          cp ports/tsj399x/port.json ports/tsj399x/README-install.md pkg/tsj399x/
+          cp ports/tsj399x/launch.sh pkg/tsj399x/
+          chmod +x pkg/tsj399x/launch.sh
+          cp ports/tsj399x/config.json ports/tsj399x/port.json ports/tsj399x/README-install.md pkg/tsj399x/
+          # TrimUI 原厂 PORTS 菜单图标/背景
+          cp pkg/tsj399x/game/data/open.png pkg/tsj399x/icon.png 2>/dev/null || true
+          cp pkg/tsj399x/game/data/open.png pkg/tsj399x/bg.png 2>/dev/null || true
           cp ports/tsj399x/game/set.ini pkg/tsj399x/game/set.ini
           echo "用户自备游戏数据拷入 game/（见 README-install.md）" > pkg/tsj399x/game/放游戏数据到这里.txt
           cd pkg

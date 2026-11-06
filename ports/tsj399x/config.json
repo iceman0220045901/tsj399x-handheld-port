@@ -1,0 +1,10 @@
+{
+    "label":"天书劫3.99X",
+    "label.ch.lang":"天书劫3.99X",
+    "icon":"icon.png",
+    "iconsel":"icon.png",
+    "background":"bg.png",
+    "themecolor":"FFFFFF",
+    "launch":"launch.sh",
+    "description":"金庸群侠传天书劫 aarch64"
+}
