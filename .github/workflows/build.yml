@@ -39,7 +39,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=/usr/local \
             -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
             -DSDL_SHARED=ON -DSDL_STATIC=OFF \
-            -DSDL_ALSA=ON -DSDL_UDEV=ON -DSDL_KMSDRM=ON \
+            -DSDL_ALSA=ON -DSDL_UDEV=ON -DSDL_KMSDRM=ON -DSDL_UNIX_CONSOLE_BUILD=ON \
             -DSDL_WAYLAND=OFF -DSDL_X11=OFF
           cmake --build /tmp/SDL/build -j$(nproc)
           cmake --install /tmp/SDL/build
