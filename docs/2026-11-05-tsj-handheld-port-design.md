@@ -71,7 +71,7 @@
       control.txt / tsj399x.json  # PortMaster 元数据
       game/               # 用户自备游戏数据（config.lua、script/、data/、font/、pic/、set.ini）
    ```
-8. **构建与兼容基线**：GitHub Actions 公开仓库，`ubuntu-24.04-arm64` runner 上以 **ubuntu:20.04 arm64 容器**为构建环境（glibc 2.31 基线，兼容 Knulli/Batocera 2.36+、CrossMix、muOS 等较旧用户态，避免 "GLIBC_2.3x not found"）；依赖库同容器内源码编译；一键 workflow 产出移植包 zip artifact；附带 CI 冒烟测试（SDL dummy video driver 启动 30 秒读 debug.log 无致命错误即过）
+8. **构建与兼容基线**（2026-11-06 修订：由 20.04/2.31 调整为 **ubuntu:22.04 arm 容器 / glibc 2.35 基线**——引擎需要 C++23（std::string::contains），20.04 无 gcc-12；Knulli/Batocera 39+/CrossMix 均满足 2.35，旧固件回退方案=静态化或降级重编；非 glibc 运行库（SDL3/libzip/libstdc++ 等）全闭包随包捆绑并由 CI 断言校验）：GitHub Actions 公开仓库，`ubuntu-24.04-arm` runner（注：正确标签为 -arm 而非 -arm64）+ 容器构建；一键 workflow 产出移植包 zip artifact；附带 CI 冒烟测试（SDL dummy 驱动 + 合成 harness 断言 API 注册面与主循环）
 9. **兼容缺口迭代回路（用户已定：不做 Windows 开发版，直接以 CI 冒烟 + 掌机实测迭代）**：
    - **M1 里程碑 = CI 无头冒烟跑真实游戏数据**：引擎加冒烟钩子（环境变量 `JY_SMOKE=1` + `JY_SMOKE_SECONDS`：SDL dummy 视频驱动、定时自动注入方向/Enter/Esc 按键、超时自动退出）——CI 在 ubuntu:20.04 arm64 容器里用真实游戏数据跑 60 秒，检查 debug.log/error.log 是否出现 "attempt to call nil" 类缺口与关键进度标记（"JY_Main start"、"Start game cycle" 等）→ 有缺口就地修引擎，无缺口才产出掌机包
    - **M2 = 掌机实测**：用户拷入两台掌机实测，错误从游戏目录的 debug.log/error.log 读取

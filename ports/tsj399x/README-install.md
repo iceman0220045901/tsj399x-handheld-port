@@ -5,6 +5,10 @@
 基于开源引擎 jysdl-bh（金庸群侠传 Lua 复刻版引擎的血统延续）编译的 **aarch64 Linux** 版本，
 用于 ANBERNIC RG40XX V（Knulli/GarlicOS）、TrimUI Brick（CrossMix/Knulli GLIDE）等 64 位 ARM 掌机。
 
+**固件要求**：需要 glibc ≥ 2.35 的 64 位固件（Knulli / Batocera 39+ / CrossMix / 较新 muOS 均满足；
+捆绑了全部非系统运行库，包括 libstdc++）。启动若报 `GLIBC_2.3x not found`，说明固件用户态过旧，
+把报错反馈给移植者换旧基线重编。
+
 ## 安装步骤
 
 1. **拷入游戏数据**：把电脑版《天书劫原味强化版3.99X 最终测试版 V15.0》目录里的以下内容，

@@ -4,7 +4,7 @@
 让《天书劫》等 ldcr 系 MOD 跑在 RG40XX V / TrimUI Brick 等掌机上。
 
 **移植改动**（其余代码忠实上游）：
-- 根目录 `CMakeLists.txt`：Linux 可执行目标（上游为 Android 共享库），C++20，Lua 5.2.4 vendor 静态链接（MOD 字节码为 0x52 格式），音频 TSFMODE（TinySoundFont 合成 MIDI，免商业 BASS 库）
+- 根目录 `CMakeLists.txt`：Linux 可执行目标（上游为 Android 共享库），C++23，Lua 5.2.4 vendor 静态链接（MOD 字节码为 0x52 格式），音频 TSFMODE（TinySoundFont 合成 MIDI，免商业 BASS 库）
 - 引擎函数**双风格注册**：`lib.*` 表 + 裸全局（旧 ldcr MOD 直呼 `GetS` 等），补注册 `GetPath`
 - 非 Android 的 Linux 下工作目录为 `./`
 - `JY_SMOKE` / `JY_SMOKE_SECONDS` 环境变量：CI 无头冒烟（自动按键 + 定时退出）

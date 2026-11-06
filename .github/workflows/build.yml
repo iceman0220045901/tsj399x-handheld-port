@@ -89,11 +89,26 @@ jobs:
       - name: Show link closure
         run: ldd build/jysdl
 
-      - name: Collect SDL3 runtime libs
+      - name: Collect runtime libs (full link closure)
         run: |
           mkdir -p sdl3-libs
           cp -a /usr/local/lib/libSDL3*.so* sdl3-libs/
+          # 非 glibc 核心依赖全部捆绑（libzip/liblzma/libzstd/libz/libstdc++/libgcc_s 等）
+          ldd build/jysdl | awk '/=> \// {print $3}' | while read -r p; do
+            base=$(basename "$p")
+            case "$base" in
+              libc.so*|libm.so*|libdl.so*|libpthread.so*|librt.so*|ld-linux*) ;;
+              *) cp -n "$p" sdl3-libs/ ;;
+            esac
+          done
           ls -la sdl3-libs/
+          # 断言：仅用捆绑库时无未解析符号
+          if LD_LIBRARY_PATH="$PWD/sdl3-libs" ldd build/jysdl | grep -q "not found"; then
+            echo "UNRESOLVED DEPENDENCIES:"
+            LD_LIBRARY_PATH="$PWD/sdl3-libs" ldd build/jysdl | grep "not found"
+            exit 1
+          fi
+          echo "dependency closure complete"
 
       - name: Upload engine binary
         uses: actions/upload-artifact@v4
